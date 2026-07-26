@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  background: #071A19;
+  color: #EAEEED;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+::selection {
+  background: #12968C;
+  color: #071A19;
+}
+
+.font-display {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+.font-mono-code {
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #154846;
+  border-radius: 999px;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot { animation: none; }
+}
