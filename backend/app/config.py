@@ -9,11 +9,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # AI provider
+    # AI provider — Claude (primary)
     anthropic_api_key: str = ""
     ai_model: str = "claude-sonnet-4-6"
     openai_api_base: str = ""
     openai_api_key: str = ""
+
+    # AI provider — Gemini (fallback)
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     # DB
     database_url: str = "sqlite+aiosqlite:///./amjad_healthcare.db"
