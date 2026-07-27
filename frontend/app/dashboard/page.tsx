@@ -1,124 +1,147 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Activity, TrendingUp, ClipboardList, ShieldAlert } from "lucide-react";
-import { getQualityReport, listCases } from "@/lib/api";
-import type { QualityReport, CaseSummary } from "@/lib/types";
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { Stethoscope, Mail, KeyRound, ArrowRight, MessageCircle, Bot } from "lucide-react";
 
-export default function DashboardPage() {
-  const [report, setReport] = useState<QualityReport | null>(null);
-  const [cases, setCases] = useState<CaseSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  useEffect(() => {
-    Promise.all([getQualityReport(), listCases()])
-      .then(([r, c]) => {
-        setReport(r);
-        setCases(c);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await signInWithEmailAndPassword(auth, email, clientId);
+      router.push("/"); // فتح باقي النظام كما هو عند النجاح
+    } catch (err: any) {
+      setError("فشل التحقق من البيانات. تأكد من البريد الإلكتروني أو الـ Client ID.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const whatsappUrl = "https://wa.me/971585436940";
+  const botpressUrl = "https://cdn.botpress.cloud/webchat/v2.3/shareable.html?configUrl=https://files.bpcontent.cloud/2025/01/25/23/20250125230347-DC8S01WC.json";
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-teal-400 hover:text-teal-300">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to Analyze
-      </Link>
-
-      <h1 className="font-display text-xl font-semibold text-slate-50">AI Performance Dashboard</h1>
-      <p className="mt-1 text-sm text-slate-400">
-        Aggregate accuracy, human corrections, and denial-risk patterns from Agent 9's continuous
-        learning knowledge base.
-      </p>
-
-      {loading ? (
-        <p className="mt-8 text-sm text-slate-500">Loading metrics…</p>
-      ) : report ? (
-        <>
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Stat icon={ClipboardList} label="Claims Reviewed" value={report.total_claims_reviewed} />
-            <Stat icon={TrendingUp} label="AI Accuracy" value={`${report.ai_accuracy_pct}%`} accent />
-            <Stat icon={Activity} label="Human Corrections" value={report.total_human_corrections} />
-            <Stat icon={ShieldAlert} label="Denial Prediction Rate" value={`${report.denial_prediction_rate}%`} warn />
+    <div className="flex min-h-screen items-center justify-center bg-ink-950 px-4 py-12">
+      <div className="w-full max-w-md space-y-6 rounded-xl border border-ink-800 bg-ink-900/50 p-8 shadow-xl backdrop-blur-md">
+        
+        {/* العبارة الترحيبية */}
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-500/10 text-teal-400">
+            <Stethoscope className="h-6 w-6" />
           </div>
+          <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-50">أهلاً بك في منصة الرعاية الذكية</h2>
+          <p className="mt-2 text-sm text-slate-400">يرجى تسجيل الدخول باستخدام البريد الإلكتروني ومعرف العميل (Client ID)</p>
+        </div>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            <div className="rounded-lg border border-ink-700 bg-ink-900/40 p-5">
-              <h3 className="font-display text-sm font-medium text-slate-100">Most Common Correction Reasons</h3>
-              {report.common_errors.length === 0 ? (
-                <p className="mt-3 text-sm text-slate-500">No corrections recorded yet.</p>
-              ) : (
-                <ul className="mt-3 flex flex-col gap-2">
-                  {report.common_errors.map((e, i) => (
-                    <li key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-300">{e.reason}</span>
-                      <span className="font-mono-code text-teal-300">{e.count}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        {error && (
+          <div className="rounded-lg bg-red-500/10 p-3 text-center text-sm text-red-400 border border-red-500/20">
+            {error}
+          </div>
+        )}
 
-            <div className="rounded-lg border border-ink-700 bg-ink-900/40 p-5">
-              <h3 className="font-display text-sm font-medium text-slate-100">Most Frequent Issues by Specialty</h3>
-              {report.most_frequent_issues.length === 0 ? (
-                <p className="mt-3 text-sm text-slate-500">No specialty data recorded yet.</p>
-              ) : (
-                <ul className="mt-3 flex flex-col gap-2">
-                  {report.most_frequent_issues.map((s, i) => (
-                    <li key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-300">{s.specialty}</span>
-                      <span className="font-mono-code text-teal-300">{s.corrections}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+        {/* نموذج تسجيل الدخول */}
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">البريد الإلكتروني</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+                <Mail className="h-4 w-4" />
+              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                placeholder="name@example.com"
+              />
             </div>
           </div>
 
-          <div className="mt-8">
-            <h3 className="font-display mb-3 text-sm font-medium text-slate-100">Recent Cases</h3>
-            <div className="overflow-hidden rounded-lg border border-ink-700">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-ink-900/80 text-xs uppercase tracking-wide text-slate-400">
-                  <tr>
-                    <th className="px-4 py-2.5 font-medium">Case ID</th>
-                    <th className="px-4 py-2.5 font-medium">Status</th>
-                    <th className="px-4 py-2.5 font-medium">Confidence</th>
-                    <th className="px-4 py-2.5 font-medium">Created</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-ink-800">
-                  {cases.length === 0 && (
-                    <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-500">No cases analyzed yet.</td></tr>
-                  )}
-                  {cases.map((c) => (
-                    <tr key={c.case_id}>
-                      <td className="px-4 py-3 font-mono-code text-teal-300">{c.case_id}</td>
-                      <td className="px-4 py-3 text-slate-300">{c.status}</td>
-                      <td className="px-4 py-3 text-slate-300">{c.confidence_score.toFixed(0)}%</td>
-                      <td className="px-4 py-3 text-slate-500">{new Date(c.created_at).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Client ID (معرف العميل)</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+                <KeyRound className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                required
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                className="w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                placeholder="أدخل الـ Client ID الخاص بك"
+              />
             </div>
           </div>
-        </>
-      ) : (
-        <p className="mt-8 text-sm text-red-400">Failed to load dashboard data.</p>
-      )}
-    </div>
-  );
-}
 
-function Stat({ icon: Icon, label, value, accent, warn }: { icon: any; label: string; value: string | number; accent?: boolean; warn?: boolean }) {
-  return (
-    <div className="rounded-lg border border-ink-700 bg-ink-900/40 p-4">
-      <Icon className={`h-4 w-4 ${accent ? "text-teal-400" : warn ? "text-amber-400" : "text-slate-400"}`} />
-      <p className="mt-3 font-mono-code text-2xl font-semibold text-slate-50">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{label}</p>
+          {/* زر تسجيل الدخول تحت المربعات */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+          >
+            {loading ? "جاري التحقق..." : "تسجيل الدخول"}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </form>
+
+        {/* عبارة إذا ليس لديك حساب سجل الآن */}
+        <div className="text-center pt-2">
+          <p className="text-xs text-slate-400">
+            إذا ليس لديك حساب؟{" "}
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-400 font-medium hover:underline inline-flex items-center gap-1"
+            >
+              سجل الآن عبر الواتساب
+            </a>
+          </p>
+        </div>
+
+        <div className="relative flex py-2 items-center">
+          <div className="flex-grow border-t border-ink-800"></div>
+          <span className="flex-shrink mx-4 text-xs text-slate-500">أو تواصل عبر</span>
+          <div className="flex-grow border-t border-ink-800"></div>
+        </div>
+
+        {/* الزرين الإضافيين في الأسفل (واتساب و Amjad AI برابط البوت) */}
+        <div className="grid grid-cols-2 gap-3">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-950 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-ink-800 transition-colors"
+          >
+            <MessageCircle className="h-4 w-4 text-green-400" />
+            تواصل واتساب
+          </a>
+          
+          <a
+            href={botpressUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-950 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-ink-800 transition-colors"
+          >
+            <Bot className="h-4 w-4 text-teal-400" />
+            Amjad AI
+          </a>
+        </div>
+
+      </div>
     </div>
   );
 }
