@@ -5,9 +5,9 @@ import { Stethoscope, Sparkles, BarChart3 } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
 import AgentTimeline from "@/components/AgentTimeline";
 import ReportView from "@/components/ReportView";
-import { analyzeDocuments } from "@/lib/api";
 import type { PipelineResult } from "@/lib/types";
 import Link from "next/link";
+import { auth } from "@/lib/firebase"; // تأكد من استيراد إعدادات فايربيس الخاصة بك
 
 export default function HomePage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -17,11 +17,45 @@ export default function HomePage() {
 
   const handleAnalyze = async () => {
     if (files.length === 0) return;
+    
+    // 1. التحقق من وجود توكن تسجيل الدخول قبل بدء التحليل
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setError("يرجى تسجيل الدخول بحسابك المعتمد أولاً للوصول إلى الأداة.");
+      return;
+    }
+
     setAnalyzing(true);
     setError(null);
     setResult(null);
+
     try {
-      const res = await analyzeDocuments(files);
+      // 2. جلب التوكن الحقيقي للمستخدم الحالي من فايربيس
+      const token = await currentUser.getIdToken();
+
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      // 3. إرسال الطلب إلى سيرفر Render مع تمرير التوكن في headers للتحقق من الصلاحيات والاشتراك
+      const response = await fetch("https://amjad-healthcare-ai.onrender.com/api/analyze", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (response.status === 403) {
+        throw new Error("عذراً، اشتراكك غير فعال أو انتهى. يرجى التجديد للتفعيل.");
+      }
+
+      if (!response.ok) {
+        throw new Error("فشل في معالجة المستندات عبر خادم الذكاء الاصطناعي.");
+      }
+
+      const res: PipelineResult = await response.json();
       setResult(res);
     } catch (e: any) {
       setError(e.message ?? "Analysis failed.");
