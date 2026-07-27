@@ -7,12 +7,13 @@ Run locally:
     cp .env.example .env    # then add your ANTHROPIC_API_KEY
     uvicorn app.main:app --reload --port 8000
 """
+import json
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
-import os
 
 from app.config import get_settings
 from app.db.database import init_db
@@ -21,17 +22,21 @@ from app.api.routes_feedback import router as feedback_router
 
 settings = get_settings()
 
-# تهيئة Firebase Admin (تأكد من توفر ملف المفاتيح أو إعداد المتغيرات البيئية لـ Firebase)
+# تهيئة Firebase Admin (تدعم متغير Vercel أو الملف المحلي)
 if not firebase_admin._apps:
     try:
-        # يمكنك استخدام متغير بيئي أو ملف محلي لبيانات اعتماد فايربيس
-        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
-        if os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
+        cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+        if cred_json:
+            cred_dict = json.loads(cred_json)
+            cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
         else:
-            # التهيئة الافتراضية إذا كانت البيئة مرفوعة على سحابة تدعمها
-            firebase_admin.initialize_app()
+            cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
+            if os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+            else:
+                firebase_admin.initialize_app()
     except Exception as e:
         print(f"Warning: Firebase Admin initialization failed: {e}")
 
@@ -46,7 +51,7 @@ async def verify_user_and_subscription(authorization: str = Header(None)):
     token = authorization.split(" ")[1]
     
     try:
-        # التحقق من صحة التتوكن عبر Firebase Auth
+        # التحقق من صحة التوكن عبر Firebase Auth
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
 
@@ -94,7 +99,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# تضمين الراوترز مع إمكانية حمايتها بالكامل أو ربط الحماية بمسارات محددة
+# تضمين الراوترز
 app.include_router(analyze_router)
 app.include_router(feedback_router)
 
