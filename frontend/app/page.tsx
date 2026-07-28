@@ -178,7 +178,7 @@ export default function HomePage() {
               <MessageCircle className="h-4 w-4" /> WhatsApp Support
             </a>
             <a
-              href="https://amjad-healthcare-ai.onrender.com"
+              href="https://cdn.botpress.cloud/webchat/v2.3/shareable.html?configUrl=https://files.bpcontent.cloud/2025/01/25/23/20250125230347-DC8S01WC.json"
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 rounded-md border border-teal-600/40 bg-teal-600/10 px-3 py-2 text-xs font-medium text-teal-400 hover:bg-teal-600/20"
