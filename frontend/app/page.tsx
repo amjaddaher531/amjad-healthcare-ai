@@ -62,7 +62,7 @@ export default function HomePage() {
     }
 
     setAnalyzing(true);
-    setError(forNull => null);
+    setError(null);
     setResult(null);
 
     try {
@@ -115,7 +115,7 @@ export default function HomePage() {
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
               <input
-                type="email5"
+                type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
