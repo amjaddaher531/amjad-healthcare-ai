@@ -10,7 +10,7 @@ import Link from "next/link";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
-// إعدادات فايربيس المباشرة
+// Direct Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -25,27 +25,27 @@ const auth = getAuth(app);
 
 export default function HomePage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // أو نعتبرها User ID / كلمة المرور حسب رغبتك
+  const [password, setPassword] = useState(""); // treated as User ID / password, per your preference
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   const [files, setFiles] = useState<File[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
-  // دالة تسجيل الدخول عبر فايربيس
+  // Firebase login handler
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
     setError(null);
 
     try {
-      // تسجيل الدخول باستخدام الإيميل وكلمة المرور/معرف العميل
+      // Sign in using email and client ID/password
       await signInWithEmailAndPassword(auth, email, password);
-      setIsAuthenticated(true); // الانتقال للواجهة الرئيسية بعد النجاح
+      setIsAuthenticated(true); // Move to main interface after success
     } catch (err: any) {
-      setError("فشل تسجيل الدخول: تأكد من صحة البريد الإلكتروني أو معرف العميل.");
+      setError("Login failed: please check your email or client ID.");
     } finally {
       setAuthLoading(false);
     }
@@ -53,11 +53,11 @@ export default function HomePage() {
 
   const handleAnalyze = async () => {
     if (files.length === 0) return;
-    
+
     const currentUser = auth.currentUser;
     if (!currentUser) {
       setIsAuthenticated(false);
-      setError("انتهت جلسة تسجيل الدخول، يرجى إعادة تسجيل الدخول.");
+      setError("Your session has expired. Please log in again.");
       return;
     }
 
@@ -82,11 +82,11 @@ export default function HomePage() {
       });
 
       if (response.status === 403) {
-        throw new Error("عذراً، اشتراكك غير فعال أو انتهى. يرجى التجديد للتفعيل.");
+        throw new Error("Sorry, your subscription is inactive or has expired. Please renew to activate.");
       }
 
       if (!response.ok) {
-        throw new Error("فشل في معالجة المستندات عبر خادم الذكاء الاصطناعي.");
+        throw new Error("Failed to process documents through the AI server.");
       }
 
       const res: PipelineResult = await response.json();
@@ -98,7 +98,7 @@ export default function HomePage() {
     }
   };
 
-  // 1. إذا لم يتم تسجيل الدخول، اعرض صفحة تسجيل الدخول الأولية
+  // 1. If not logged in, show the initial login screen
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-ink-950 px-6 py-10 text-slate-100">
@@ -108,12 +108,12 @@ export default function HomePage() {
               <Stethoscope className="h-8 w-8 text-teal-400" />
             </div>
             <h1 className="font-display text-xl font-bold text-slate-50">Amjad Healthcare AI</h1>
-            <p className="text-xs text-slate-400 mt-1">منصة التذكير والترميز الطبي المتقدمة</p>
+            <p className="text-xs text-slate-400 mt-1">Advanced medical coding and audit platform</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">البريد الإلكتروني (Email)</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
               <input
                 type="email5"
                 required
@@ -125,7 +125,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">معرف العميل أو كلمة المرور (User ID / Password)</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Client ID / Password</label>
               <input
                 type="password"
                 required
@@ -148,36 +148,36 @@ export default function HomePage() {
               className="w-full flex items-center justify-center gap-2 rounded-md bg-teal-500 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-teal-400 disabled:opacity-50"
             >
               <LogIn className="h-4 w-4" />
-              {authLoading ? "جاري التحقق..." : "تسجيل الدخول (Login)"}
+              {authLoading ? "Verifying…" : "Login"}
             </button>
           </form>
 
-          {/* عبارة "إذا ما عندك حساب سجل الان" والرابط إلى واتساب */}
+          {/* "Don't have an account? Register now" + WhatsApp link */}
           <div className="mt-6 text-center border-t border-ink-800 pt-4">
             <p className="text-xs text-slate-400">
-              إذا ما عندك حساب؟{" "}
-              <a
-                href="https://wa.me/971XXXXXXXXX" 
+              Don't have an account?{" "}
+              
+                href="https://wa.me/971XXXXXXXXX"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-teal-400 font-medium hover:underline"
               >
-                سجل الآن عبر واتساب
+                Register now via WhatsApp
               </a>
             </p>
           </div>
 
-          {/* الأزرار السفلية (واتساب و Amjad AI) */}
+          {/* Bottom buttons (WhatsApp and Amjad AI) */}
           <div className="mt-6 flex items-center justify-center gap-3">
-            <a
+            
               href="https://wa.me/971XXXXXXXXX"
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 rounded-md border border-emerald-600/40 bg-emerald-600/10 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-emerald-600/20"
             >
-              <MessageCircle className="h-4 w-4" /> واتساب الدعم
+              <MessageCircle className="h-4 w-4" /> WhatsApp Support
             </a>
-            <a
+            
               href="https://amjad-healthcare-ai.onrender.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -191,7 +191,7 @@ export default function HomePage() {
     );
   }
 
-  // 2. الواجهة الرئيسية (تظهر بعد تسجيل الدخول الناجح)
+  // 2. Main interface (shown after successful login)
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="flex items-center justify-between border-b border-ink-800 pb-6">
@@ -209,7 +209,7 @@ export default function HomePage() {
             onClick={() => setIsAuthenticated(false)}
             className="text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded-md"
           >
-            تسجيل الخروج
+            Log out
           </button>
           <Link
             href="/dashboard"
