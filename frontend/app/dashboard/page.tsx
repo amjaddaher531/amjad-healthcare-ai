@@ -124,7 +124,7 @@ export default function LoginPage() {
         <div className="pt-2 text-center">
           <p className="text-xs text-slate-400">
             Don't have an account?{" "}
-            
+            <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
