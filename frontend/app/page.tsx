@@ -156,8 +156,8 @@ export default function HomePage() {
           <div className="mt-6 text-center border-t border-ink-800 pt-4">
             <p className="text-xs text-slate-400">
               Don't have an account?{" "}
-              
-                href="https://wa.me/971XXXXXXXXX"
+              <a
+                href="https://wa.me/971585436940"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-teal-400 font-medium hover:underline"
@@ -169,15 +169,15 @@ export default function HomePage() {
 
           {/* Bottom buttons (WhatsApp and Amjad AI) */}
           <div className="mt-6 flex items-center justify-center gap-3">
-            
-              href="https://wa.me/971XXXXXXXXX"
+            <a
+              href="https://wa.me/971585436940"
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 rounded-md border border-emerald-600/40 bg-emerald-600/10 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-emerald-600/20"
             >
               <MessageCircle className="h-4 w-4" /> WhatsApp Support
             </a>
-            
+            <a
               href="https://amjad-healthcare-ai.onrender.com"
               target="_blank"
               rel="noopener noreferrer"
