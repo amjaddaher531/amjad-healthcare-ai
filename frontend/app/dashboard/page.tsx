@@ -144,7 +144,7 @@ export default function LoginPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          
+          <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
