@@ -153,8 +153,7 @@ export default function LoginPage() {
             <MessageCircle className="h-4 w-4 text-green-400" />
             WhatsApp
           </a>
-
-          
+          <a
             href={botpressUrl}
             target="_blank"
             rel="noopener noreferrer"
