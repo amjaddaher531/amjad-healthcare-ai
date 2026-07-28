@@ -124,7 +124,7 @@ export default function LoginPage() {
         <div className="pt-2 text-center">
           <p className="text-xs text-slate-400">
             Don't have an account?{" "}
-            <a
+            
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -144,7 +144,7 @@ export default function LoginPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <a
+          
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -154,7 +154,7 @@ export default function LoginPage() {
             WhatsApp
           </a>
 
-          <a
+          
             href={botpressUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -165,10 +165,6 @@ export default function LoginPage() {
           </a>
         </div>
 
-      </div>
-    </div>
-  );
-}
       </div>
     </div>
   );
