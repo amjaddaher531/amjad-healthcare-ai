@@ -14,6 +14,7 @@ from app.models.schemas import PipelineResult
 from app.services.document_service import extract_file
 from app.agents.orchestrator import run_pipeline
 from app.services.export_service import build_pdf, build_excel
+from app.api.dependencies import get_current_user
 
 router = APIRouter(prefix="/api", tags=["analyze"])
 
@@ -22,6 +23,7 @@ router = APIRouter(prefix="/api", tags=["analyze"])
 async def analyze_documents(
     files: list[UploadFile] = File(...),
     session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
 ):
     if not files:
         raise HTTPException(400, "No files uploaded.")
@@ -45,12 +47,15 @@ async def analyze_documents(
     )
     session.add(case)
     await session.commit()
-
     return result
 
 
 @router.get("/cases/{case_id}", response_model=PipelineResult)
-async def get_case(case_id: str, session: AsyncSession = Depends(get_session)):
+async def get_case(
+    case_id: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
     case = await session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found.")
@@ -58,7 +63,10 @@ async def get_case(case_id: str, session: AsyncSession = Depends(get_session)):
 
 
 @router.get("/cases")
-async def list_cases(session: AsyncSession = Depends(get_session)):
+async def list_cases(
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
     from sqlalchemy import select
     rows = (await session.execute(select(Case).order_by(Case.created_at.desc()))).scalars().all()
     return [
@@ -69,7 +77,11 @@ async def list_cases(session: AsyncSession = Depends(get_session)):
 
 
 @router.get("/cases/{case_id}/export/json")
-async def export_json(case_id: str, session: AsyncSession = Depends(get_session)):
+async def export_json(
+    case_id: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
     case = await session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found.")
@@ -78,7 +90,11 @@ async def export_json(case_id: str, session: AsyncSession = Depends(get_session)
 
 
 @router.get("/cases/{case_id}/export/pdf")
-async def export_pdf(case_id: str, session: AsyncSession = Depends(get_session)):
+async def export_pdf(
+    case_id: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
     case = await session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found.")
@@ -89,7 +105,11 @@ async def export_pdf(case_id: str, session: AsyncSession = Depends(get_session))
 
 
 @router.get("/cases/{case_id}/export/excel")
-async def export_excel(case_id: str, session: AsyncSession = Depends(get_session)):
+async def export_excel(
+    case_id: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
     case = await session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found.")
