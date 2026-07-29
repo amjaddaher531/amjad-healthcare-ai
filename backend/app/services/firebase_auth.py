@@ -1,17 +1,17 @@
 import os
+import json
 import firebase_admin
 from firebase_admin import credentials, auth
 from fastapi import HTTPException
 
-# قراءة مسار ملف الـ Service Account من متغير البيئة
-_cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+_cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
 
-if not _cred_path:
-    raise RuntimeError("FIREBASE_CREDENTIALS_PATH is not set in .env")
+if not _cred_json:
+    raise RuntimeError("FIREBASE_CREDENTIALS_JSON is not set")
 
-# تهيئة Firebase Admin SDK مرة وحدة بس عند أول استيراد للملف
 if not firebase_admin._apps:
-    cred = credentials.Certificate(_cred_path)
+    cred_dict = json.loads(_cred_json)
+    cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
 
