@@ -5,10 +5,11 @@ import { Stethoscope, Sparkles, BarChart3, LogIn, MessageCircle, ShieldCheck } f
 import FileUpload from "@/components/FileUpload";
 import AgentTimeline from "@/components/AgentTimeline";
 import ReportView from "@/components/ReportView";
+import CaseIntakeForm, { emptyCaseForm, type CaseFormData } from "@/components/CaseIntakeForm";
 import type { PipelineResult } from "@/lib/types";
 import Link from "next/link";
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 // Direct Firebase configuration
 const firebaseConfig = {
@@ -22,30 +23,45 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 export default function HomePage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // treated as User ID / password, per your preference
+  const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [files, setFiles] = useState<File[]>([]);
+  const [caseForm, setCaseForm] = useState<CaseFormData>(emptyCaseForm());
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Firebase login handler
+  // Firebase login handler (Email)
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
     setError(null);
 
     try {
-      // Sign in using email and client ID/password
       await signInWithEmailAndPassword(auth, email, password);
-      setIsAuthenticated(true); // Move to main interface after success
+      setIsAuthenticated(true);
     } catch (err: any) {
       setError("Login failed: please check your email or client ID.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Firebase login handler (Google)
+  const handleGoogleLogin = async () => {
+    setAuthLoading(true);
+    setError(null);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      setError("Google sign-in failed. Please try again.");
     } finally {
       setAuthLoading(false);
     }
@@ -72,6 +88,7 @@ export default function HomePage() {
       files.forEach((file) => {
         formData.append("files", file);
       });
+      formData.append("case_form", JSON.stringify(caseForm));
 
       const response = await fetch("https://amjad-healthcare-ai.onrender.com/api/analyze", {
         method: "POST",
@@ -109,6 +126,28 @@ export default function HomePage() {
             </div>
             <h1 className="font-display text-xl font-bold text-slate-50">Amjad Healthcare AI</h1>
             <p className="text-xs text-slate-400 mt-1">Advanced medical coding and audit platform</p>
+          </div>
+
+          {/* Google Sign-In */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={authLoading}
+            className="w-full flex items-center justify-center gap-2 rounded-md border border-ink-700 bg-white py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-slate-100 disabled:opacity-50"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 48 48">
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.5-.4-3.5z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3c-7.7 0-14.3 4.3-17.7 10.7z"/>
+              <path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 36 26.9 37 24 37c-5.3 0-9.7-3.4-11.3-8l-6.6 5.1C9.6 40.6 16.2 45 24 45z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.5l6.6 5.4C41.5 35.6 45 30.3 45 24c0-1.4-.1-2.5-.4-3.5z"/>
+            </svg>
+            {authLoading ? "Verifying…" : "Continue with Google"}
+          </button>
+
+          <div className="my-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-ink-800" />
+            <span className="text-[10px] uppercase tracking-wide text-slate-500">or</span>
+            <div className="h-px flex-1 bg-ink-800" />
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -152,11 +191,10 @@ export default function HomePage() {
             </button>
           </form>
 
-          {/* "Don't have an account? Register now" + WhatsApp link */}
           <div className="mt-6 text-center border-t border-ink-800 pt-4">
             <p className="text-xs text-slate-400">
               Don't have an account?{" "}
-              <a
+              
                 href="https://wa.me/971585436940"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -167,9 +205,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Bottom buttons (WhatsApp and Amjad AI) */}
           <div className="mt-6 flex items-center justify-center gap-3">
-            <a
+            
               href="https://wa.me/971585436940"
               target="_blank"
               rel="noopener noreferrer"
@@ -177,7 +214,7 @@ export default function HomePage() {
             >
               <MessageCircle className="h-4 w-4" /> WhatsApp Support
             </a>
-            <a
+            
               href="https://cdn.botpress.cloud/webchat/v2.3/shareable.html?configUrl=https://files.bpcontent.cloud/2025/01/25/23/20250125230347-DC8S01WC.json"
               target="_blank"
               rel="noopener noreferrer"
@@ -221,37 +258,41 @@ export default function HomePage() {
       </header>
 
       {!result && (
-        <section className="mt-10">
-          <div className="mb-6">
+        <section className="mt-10 space-y-10">
+          <div>
             <h2 className="font-display text-2xl font-semibold text-slate-50">
               An entire coding department, in one upload.
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">
-              Upload progress notes, operative reports, radiology or lab results, discharge summaries, or
-              insurance documents. Nine specialized agents extract, code, bill, audit, and verify — with
-              every code traced back to its source evidence.
+              Fill in the case details, upload the supporting documents, and let nine specialized agents
+              extract, code, bill, audit, and verify — with every code traced back to its source evidence.
             </p>
           </div>
 
-          <FileUpload files={files} onChange={setFiles} disabled={analyzing} />
+          <CaseIntakeForm value={caseForm} onChange={setCaseForm} disabled={analyzing} />
+
+          <div>
+            <h3 className="font-display mb-4 text-sm font-semibold text-slate-200">Supporting Documents</h3>
+            <FileUpload files={files} onChange={setFiles} disabled={analyzing} />
+          </div>
 
           <button
             onClick={handleAnalyze}
             disabled={files.length === 0 || analyzing}
-            className="mt-6 inline-flex items-center gap-2 rounded-md bg-teal-500 px-5 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-md bg-teal-500 px-5 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Sparkles className="h-4 w-4" />
-            {analyzing ? "Analyzing…" : "Analyze"}
+            {analyzing ? "Analyzing…" : "Submit case"}
           </button>
 
           {error && (
-            <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2 text-sm text-red-400">
+            <p className="rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2 text-sm text-red-400">
               {error}
             </p>
           )}
 
           {analyzing && (
-            <div className="mt-10 rounded-lg border border-ink-700 bg-ink-900/40 p-6">
+            <div className="rounded-lg border border-ink-700 bg-ink-900/40 p-6">
               <h3 className="font-display mb-6 text-sm font-medium text-slate-200">Agent Activity</h3>
               <AgentTimeline events={[]} />
               <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
@@ -269,6 +310,7 @@ export default function HomePage() {
             onClick={() => {
               setResult(null);
               setFiles([]);
+              setCaseForm(emptyCaseForm());
             }}
             className="mb-6 text-xs font-medium text-teal-400 hover:text-teal-300"
           >
