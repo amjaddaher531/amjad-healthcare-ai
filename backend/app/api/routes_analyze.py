@@ -4,7 +4,7 @@ retrieve / export results. This is the single "Analyze" button endpoint.
 """
 import json
 import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,11 +22,18 @@ router = APIRouter(prefix="/api", tags=["analyze"])
 @router.post("/analyze", response_model=PipelineResult)
 async def analyze_documents(
     files: list[UploadFile] = File(...),
+    case_form: str | None = Form(None),
     session: AsyncSession = Depends(get_session),
     current_user: dict = Depends(get_current_user),
 ):
     if not files:
         raise HTTPException(400, "No files uploaded.")
+
+    if case_form:
+        try:
+            json.loads(case_form)
+        except json.JSONDecodeError:
+            raise HTTPException(400, "Invalid case_form JSON.")
 
     extracted = []
     for f in files:
@@ -44,6 +51,7 @@ async def analyze_documents(
         status=result.final_report.final_status.value,
         confidence_score=result.final_report.confidence_score,
         result_json=result.model_dump_json(),
+        case_form_json=case_form,
     )
     session.add(case)
     await session.commit()
