@@ -194,7 +194,7 @@ export default function HomePage() {
           <div className="mt-6 text-center border-t border-ink-800 pt-4">
             <p className="text-xs text-slate-400">
               Don't have an account?{" "}
-              
+              <a
                 href="https://wa.me/971585436940"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -206,7 +206,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-3">
-            
+            <a
               href="https://wa.me/971585436940"
               target="_blank"
               rel="noopener noreferrer"
@@ -214,7 +214,7 @@ export default function HomePage() {
             >
               <MessageCircle className="h-4 w-4" /> WhatsApp Support
             </a>
-            
+            <a
               href="https://cdn.botpress.cloud/webchat/v2.3/shareable.html?configUrl=https://files.bpcontent.cloud/2025/01/25/23/20250125230347-DC8S01WC.json"
               target="_blank"
               rel="noopener noreferrer"
