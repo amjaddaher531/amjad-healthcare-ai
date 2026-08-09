@@ -8,23 +8,17 @@ Persistence models:
 from datetime import datetime
 from sqlalchemy import String, Text, DateTime, JSON, Float, Integer
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.db.database import Base
-
-
 class Case(Base):
     __tablename__ = "cases"
-
     id: Mapped[str] = mapped_column(String(16), primary_key=True)
     status: Mapped[str] = mapped_column(String(32), default="PROCESSING")
     confidence_score: Mapped[float] = mapped_column(Float, default=0.0)
     result_json: Mapped[str] = mapped_column(Text)  # full PipelineResult as JSON
+    case_form_json: Mapped[str | None] = mapped_column(Text, nullable=True)  # بيانات نموذج تقديم الحالة
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-
 class Correction(Base):
     __tablename__ = "corrections"
-
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[str] = mapped_column(String(16), index=True)
     code: Mapped[str] = mapped_column(String(32))
