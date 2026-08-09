@@ -282,7 +282,7 @@ export default function HomePage() {
             an active subscription yet — subscribe to start analyzing cases with AMJAD AI.
           </p>
 
-          
+          <a
             href={SUBSCRIBE_URL}
             target="_blank"
             rel="noopener noreferrer"
